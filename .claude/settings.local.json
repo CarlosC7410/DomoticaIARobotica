@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\juanc\\\\bussines\\\\\" -Recurse -Depth 2 | Where-Object { $_.Name -eq \"server.js\" -or $_.Name -eq \"backend-express\" } | Select-Object FullName)",
+      "PowerShell(Head 20 *)",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\juanc\\\\\" -Depth 3 -ErrorAction SilentlyContinue | Where-Object { $_.Name -match \"backend|server|express\" } | Select-Object -First 20 FullName)",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\juanc\\\\Documents\\\\\" -Depth 4 -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq \"server.js\" } | Select-Object -First 10 FullName)",
+      "PowerShell(ollama *)",
+      "PowerShell(New-Item *)",
+      "PowerShell(Invoke-WebRequest -Uri \"http://localhost:3000/health\" -UseBasicParsing 2>&1 | Select-Object StatusCode, Content)",
+      "PowerShell(Invoke-WebRequest -Uri \"http://localhost:8000/docs\" -UseBasicParsing 2>&1 | Select-Object StatusCode)",
+      "PowerShell(Get-Process *)",
+      "PowerShell(Start-Process -FilePath \"ollama\" -ArgumentList \"serve\" -WindowStyle Hidden; Write-Host \"Ollama iniciado\")",
+      "PowerShell($env:AGENTE = \"C:\\\\Users\\\\juanc\\\\bussines\\\\uat-Carlos\\\\ProyectoDomaticaIA\\\\agente\"; Start-Process -FilePath \"$env:AGENTE\\\\.venv\\\\Scripts\\\\uvicorn.exe\" -ArgumentList \"app:app\",\"--host\",\"0.0.0.0\",\"--port\",\"8000\" -WorkingDirectory $env:AGENTE -WindowStyle Hidden; Write-Host \"FastAPI iniciado\")",
+      "PowerShell($backend = \"C:\\\\Users\\\\juanc\\\\bussines\\\\uat-Carlos\\\\ProyectoDomaticaIA\\\\backend-test\"; Start-Process -FilePath \"node\" -ArgumentList \"server.js\" -WorkingDirectory $backend -WindowStyle Hidden; Write-Host \"Backend-test iniciado\")",
+      "PowerShell($frontend = \"C:\\\\Users\\\\juanc\\\\bussines\\\\uat-Carlos\\\\ProyectoDomaticaIA\\\\agente\"; Start-Process -FilePath \"node\" -ArgumentList \"./node_modules/vite/bin/vite.js\",\"--host\" -WorkingDirectory $frontend -WindowStyle Hidden; Write-Host \"Frontend iniciado\")",
+      "PowerShell(Start-Sleep -Seconds 5; $h = Invoke-WebRequest -Uri \"http://localhost:3000/health\" -UseBasicParsing -ErrorAction SilentlyContinue; $f = Invoke-WebRequest -Uri \"http://localhost:8000/docs\" -UseBasicParsing -ErrorAction SilentlyContinue; \"Backend :3000 -> $\\($h.StatusCode\\)\"; \"FastAPI :8000 -> $\\($f.StatusCode\\)\")",
+      "PowerShell($body = '{\"message\": \"hola, como estas?\"}'; $r = Invoke-WebRequest -Uri \"http://localhost:8000/chat\" -Method POST -Body $body -ContentType \"application/json\" -UseBasicParsing; $r.Content)",
+      "PowerShell($body = '{\"message\": \"hola, como estas?\"}'; $r = Invoke-WebRequest -Uri \"http://localhost:8000/chat\" -Method POST -Body $body -ContentType \"application/json\" -UseBasicParsing; [System.Text.Encoding]::UTF8.GetString\\($r.RawContentStream.ToArray\\(\\)\\))",
+      "PowerShell(netstat *)",
+      "PowerShell(Stop-Process *)",
+      "PowerShell(Start-Process -FilePath \"ollama\" -ArgumentList \"serve\" -WindowStyle Normal; Write-Host \"Ollama iniciado\"; Start-Sleep -Seconds 4; Invoke-WebRequest -Uri \"http://localhost:11434/api/tags\" -UseBasicParsing -ErrorAction SilentlyContinue | Select-Object -ExpandProperty StatusCode)",
+      "PowerShell($agente = \"C:\\\\Users\\\\juanc\\\\bussines\\\\uat-Carlos\\\\ProyectoDomaticaIA\\\\agente\"; Start-Process -FilePath \"$agente\\\\.venv\\\\Scripts\\\\uvicorn.exe\" -ArgumentList \"app:app\",\"--host\",\"0.0.0.0\",\"--port\",\"8000\" -WorkingDirectory $agente -WindowStyle Normal; Write-Host \"FastAPI iniciado\"; Start-Sleep -Seconds 5; Invoke-WebRequest -Uri \"http://localhost:8000/docs\" -UseBasicParsing -ErrorAction SilentlyContinue | Select-Object -ExpandProperty StatusCode)",
+      "PowerShell($backend = \"C:\\\\Users\\\\juanc\\\\bussines\\\\uat-Carlos\\\\ProyectoDomaticaIA\\\\backend-test\"; Start-Process -FilePath \"node\" -ArgumentList \"server.js\" -WorkingDirectory $backend -WindowStyle Normal; Write-Host \"Backend iniciado\"; Start-Sleep -Seconds 3; Invoke-WebRequest -Uri \"http://localhost:3000/health\" -UseBasicParsing -ErrorAction SilentlyContinue | Select-Object -ExpandProperty StatusCode)",
+      "PowerShell($backend = \"C:\\\\Users\\\\juanc\\\\bussines\\\\uat-Carlos\\\\ProyectoDomaticaIA\\\\backend-test\"; Start-Process -FilePath \"node\" -ArgumentList \"server.js\" -WorkingDirectory $backend -WindowStyle Normal; Start-Sleep -Seconds 3; $r = Invoke-WebRequest -Uri \"http://localhost:3000/health\" -UseBasicParsing -Method GET -Headers @{ \"Origin\" = \"http://localhost:5173\" }; $r.Headers | Format-List)"
+    ]
+  }
+}
