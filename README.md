@@ -104,3 +104,4 @@ Abre la URL de Vite (normalmente `http://localhost:5173`), escribe la IP del ser
 # Proyecto-LLM-Domotica
 # Proyecto-LLM-Domotica-1
 # ProyectoDomaticaIA
+# DomoticaIARobotica
