@@ -33,10 +33,117 @@ const estado = {
 let esp32Socket = null;
 const frontendClients = new Map();
 
+const VALID_ROBOT_EMOTIONS = new Set([
+  "neutral",
+  "happy",
+  "excited",
+  "sad",
+  "surprised",
+  "thinking",
+  "speaking",
+  "listening",
+  "sleeping",
+  "confused",
+  "angry",
+  "annoyed"
+]);
+
+const NATURAL_EMOTION_DURATION_MS = 10000;
+const NATURAL_ROBOT_EMOTIONS = new Set([
+  "happy",
+  "excited",
+  "sad",
+  "surprised",
+  "confused",
+  "angry",
+  "annoyed"
+]);
+
+const robotState = {
+  emotion: "neutral",
+  status: "Charsbotai en espera.",
+  speaking: false,
+  mode: "state",
+  autoReset: false,
+  autoResetAt: null,
+  updatedAt: Date.now()
+};
+
+let robotEmotionTimer = null;
+
+const clearRobotEmotionTimer = () => {
+  if (robotEmotionTimer) {
+    clearTimeout(robotEmotionTimer);
+    robotEmotionTimer = null;
+  }
+};
+
+const scheduleRobotEmotionReset = (durationMs = NATURAL_EMOTION_DURATION_MS, resetTo = "neutral") => {
+  clearRobotEmotionTimer();
+
+  robotState.autoReset = true;
+  robotState.autoResetAt = Date.now() + durationMs;
+
+  robotEmotionTimer = setTimeout(() => {
+    robotState.emotion = resetTo;
+    robotState.speaking = resetTo === "speaking";
+    robotState.mode = "state";
+    robotState.autoReset = false;
+    robotState.autoResetAt = null;
+    robotState.updatedAt = Date.now();
+    robotEmotionTimer = null;
+    io.emit("robot:emotion", { ...robotState });
+  }, durationMs);
+};
+
+const updateRobotEmotion = (payload = {}) => {
+  const emotion = typeof payload.emotion === "string" ? payload.emotion : "neutral";
+  if (!VALID_ROBOT_EMOTIONS.has(emotion)) return null;
+
+  const mode = typeof payload.mode === "string" ? payload.mode : "state";
+  const shouldAutoReset = Boolean(payload.autoReset) || mode === "natural";
+  const durationMs = Number.isFinite(Number(payload.durationMs))
+    ? Math.max(1000, Number(payload.durationMs))
+    : NATURAL_EMOTION_DURATION_MS;
+  const resetTo = VALID_ROBOT_EMOTIONS.has(payload.resetTo) ? payload.resetTo : "neutral";
+
+  clearRobotEmotionTimer();
+
+  robotState.emotion = emotion;
+  robotState.speaking = emotion === "speaking";
+  robotState.mode = mode;
+  robotState.autoReset = false;
+  robotState.autoResetAt = null;
+  robotState.updatedAt = Date.now();
+
+  if (shouldAutoReset && NATURAL_ROBOT_EMOTIONS.has(emotion)) {
+    scheduleRobotEmotionReset(durationMs, resetTo);
+  }
+
+  return { ...robotState };
+};
+
+const updateRobotStatus = (payload = {}) => {
+  const text = typeof payload.text === "string" ? payload.text : "";
+  if (text) robotState.status = text;
+  robotState.updatedAt = Date.now();
+  return { ...robotState };
+};
+
 const normalizeText = (text = "") =>
   text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
 
 const wsIsOpen = (ws) => ws && ws.readyState === WebSocket.OPEN;
+
+const ESP32_STALE_MS = 7000;
+
+const isESP32Connected = () => {
+  const tieneDatosRecientes =
+    estado.ultimaActualizacion &&
+    Date.now() - estado.ultimaActualizacion <= ESP32_STALE_MS;
+
+  return wsIsOpen(esp32Socket) && tieneDatosRecientes;
+};
 
 const getLocalIP = () => {
   const interfaces = os.networkInterfaces();
@@ -50,7 +157,7 @@ const getLocalIP = () => {
 
 const buildDeviceList = () => {
   const devices = [];
-  if (wsIsOpen(esp32Socket)) {
+  if (isESP32Connected()) {
     devices.push({ socketId: "esp32-device", deviceName: "ESP32", type: "esp32" });
   }
   for (const [socketId, deviceName] of frontendClients.entries()) {
@@ -87,7 +194,7 @@ const emitState = () => {
 };
 
 const sendToESP32 = (command) => {
-  if (!wsIsOpen(esp32Socket)) return false;
+  if (!isESP32Connected()) return false;
   try {
     esp32Socket.send(command);
     return true;
@@ -224,9 +331,10 @@ const callLLM = async (message) => {
 app.get("/health", (req, res) => {
   res.json({
     ok: true,
-    esp32Connected: wsIsOpen(esp32Socket),
+    esp32Connected: isESP32Connected(),
     devices: buildDeviceList(),
-    estado
+    estado,
+    robot: { ...robotState }
   });
 });
 
@@ -237,13 +345,100 @@ const io = new SocketIOServer(httpServer, {
   transports: ["websocket", "polling"]
 });
 
+const allowedRobotCommands = new Set([
+  "entrada:on",
+  "entrada:off",
+  "cocina:on",
+  "cocina:off",
+  "bano:on",
+  "bano:off",
+  "cuarto:on",
+  "cuarto:off",
+  "foco:on",
+  "foco:off",
+  "ventilador:on",
+  "ventilador:off",
+  "puerta:abrir",
+  "puerta:cerrar"
+]);
+
+const commandReplies = {
+  "entrada:on": "Listo, encendí la luz de la entrada.",
+  "entrada:off": "Listo, apagué la luz de la entrada.",
+  "cocina:on": "Listo, encendí la luz de la cocina.",
+  "cocina:off": "Listo, apagué la luz de la cocina.",
+  "bano:on": "Listo, encendí la luz del baño.",
+  "bano:off": "Listo, apagué la luz del baño.",
+  "cuarto:on": "Listo, encendí la luz del cuarto.",
+  "cuarto:off": "Listo, apagué la luz del cuarto.",
+  "foco:on": "Listo, encendí el foco.",
+  "foco:off": "Listo, apagué el foco.",
+  "ventilador:on": "Listo, encendí el ventilador.",
+  "ventilador:off": "Listo, apagué el ventilador.",
+  "puerta:abrir": "Listo, abrí la puerta.",
+  "puerta:cerrar": "Listo, cerré la puerta."
+};
+
+app.post("/robot/command", (req, res) => {
+  const command = req.body?.command;
+
+  if (typeof command !== "string" || !allowedRobotCommands.has(command)) {
+    return res.status(400).json({
+      ok: false,
+      reply: "No reconozco ese comando domótico."
+    });
+  }
+
+  if (!isESP32Connected()) {
+    return res.status(503).json({
+      ok: false,
+      reply: "Entendí el comando, pero el ESP32D no está conectado en este momento."
+    });
+  }
+
+  const ok = sendToESP32(command);
+
+  if (!ok) {
+    return res.status(500).json({
+      ok: false,
+      reply: "No pude enviar el comando al ESP32D."
+    });
+  }
+
+  updateStateFromCommand(command);
+  emitState();
+
+  return res.json({
+    ok: true,
+    command,
+    reply: commandReplies[command] || `Listo, ejecuté el comando ${command}.`
+  });
+});
+
 io.on("connection", (socket) => {
+  socket.on("robot:emotion", (payload) => {
+    const newState = updateRobotEmotion(payload);
+    if (!newState) return;
+
+    console.log("Emoción del robot:", newState);
+    io.emit("robot:emotion", newState);
+  });
+
+  socket.on("robot:status", (payload) => {
+    const newState = updateRobotStatus(payload);
+
+    console.log("Estado del robot:", newState);
+    io.emit("robot:status", newState);
+  });
+  
   frontendClients.set(socket.id, "Frontend Web");
   socket.emit("init", {
     estado,
     devices: buildDeviceList(),
-    messages: []
+    messages: [],
+    robot: { ...robotState }
   });
+  socket.emit("robot:emotion", { ...robotState });
   emitState();
 
   socket.on("device:hello", (payload) => {
@@ -281,7 +476,7 @@ io.on("connection", (socket) => {
     const directCommands = parseDirectCommands(text);
 
     if (directCommands.length > 0) {
-      if (!wsIsOpen(esp32Socket)) {
+      if (!isESP32Connected()) {
         io.emit("chat:message", {
           user: "Sistema",
           text: "El ESP32 no está conectado en este momento.",
@@ -333,7 +528,7 @@ io.on("connection", (socket) => {
     });
 
     if (llmData.led_command) {
-      if (!wsIsOpen(esp32Socket)) {
+      if (!isESP32Connected()) {
         io.emit("chat:message", {
           user: "Sistema",
           text: "Se generaron comandos, pero el ESP32 no está conectado.",

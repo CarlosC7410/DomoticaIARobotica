@@ -1,0 +1,677 @@
+:root {
+  --face-cyan: #12e7ff;
+  --face-cyan-glow: rgba(18, 231, 255, 0.82);
+  --face-purple: #a983ff;
+  --face-purple-glow: rgba(169, 131, 255, 0.78);
+  --face-yellow: #ffd54a;
+  --face-yellow-glow: rgba(255, 213, 74, 0.76);
+}
+
+.robot-screen {
+  width: 100vw;
+  height: 100vh;
+  background: #020711;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: pointer;
+  user-select: none;
+}
+
+.robot-face {
+  width: min(840px, 100vw);
+  height: min(500px, 100vh);
+  position: relative;
+  background: transparent;
+}
+
+.eyes {
+  position: absolute;
+  top: 108px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 235px;
+  transition: all 0.28s ease;
+}
+
+.eye {
+  width: 108px;
+  height: 108px;
+  position: relative;
+  background: var(--face-cyan);
+  border-radius: 50%;
+  box-shadow:
+    0 0 22px var(--face-cyan),
+    0 0 58px var(--face-cyan-glow),
+    0 0 110px rgba(18, 231, 255, 0.42);
+  transform-origin: center;
+  transition: all 0.28s ease;
+  animation: blink 5.4s infinite;
+}
+
+.eye-shine {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  top: 17px;
+  left: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.mouth-area {
+  position: absolute;
+  top: 330px;
+  left: 50%;
+  width: 220px;
+  height: 120px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  transition: all 0.28s ease;
+}
+
+.mouth-shape {
+  background: var(--face-cyan);
+  box-shadow:
+    0 0 16px var(--face-cyan),
+    0 0 40px var(--face-cyan-glow);
+  transition: all 0.25s ease;
+}
+
+.mouth-neutral,
+.mouth-annoyed {
+  width: 106px;
+  height: 17px;
+  border-radius: 999px;
+}
+
+.mouth-svg {
+  width: 198px;
+  height: 116px;
+  overflow: visible;
+}
+
+.mouth-svg path {
+  fill: none;
+  stroke: var(--face-cyan);
+  stroke-width: 16;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter:
+    drop-shadow(0 0 8px var(--face-cyan))
+    drop-shadow(0 0 18px var(--face-cyan-glow));
+}
+
+@keyframes blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.16); }
+}
+
+/* Neutral */
+.robot-screen.neutral .mouth-area {
+  top: 334px;
+}
+
+/* Feliz */
+.robot-screen.happy .eye-shine {
+  opacity: 0.45;
+}
+
+.robot-screen.happy .mouth-area {
+  top: 316px;
+}
+
+/* Emocionado / riendo */
+.robot-screen.excited .eyes {
+  top: 118px;
+  gap: 235px;
+}
+
+.robot-screen.excited .eye {
+  width: 112px;
+  height: 52px;
+  background: transparent;
+  border-radius: 0 0 90px 90px;
+  border-bottom: 17px solid var(--face-cyan);
+  box-shadow:
+    0 15px 28px var(--face-cyan-glow),
+    0 0 35px var(--face-cyan-glow);
+  animation: excitedBounce 0.75s infinite alternate ease-in-out;
+}
+
+.robot-screen.excited .eye-shine {
+  display: none;
+}
+
+.robot-screen.excited .mouth-area {
+  top: 306px;
+}
+
+@keyframes excitedBounce {
+  from { transform: translateY(0); }
+  to { transform: translateY(-7px); }
+}
+
+/* Triste */
+.robot-screen.sad .eyes {
+  top: 116px;
+}
+
+.robot-screen.sad .left-eye {
+  transform: rotate(10deg) scaleY(0.82);
+}
+
+.robot-screen.sad .right-eye {
+  transform: rotate(-10deg) scaleY(0.82);
+}
+
+.robot-screen.sad .mouth-area {
+  top: 318px;
+}
+
+/* Sorprendido */
+.robot-screen.surprised .eye {
+  width: 120px;
+  height: 120px;
+}
+
+.robot-screen.surprised .mouth-area {
+  top: 330px;
+}
+
+.mouth-o {
+  width: 62px;
+  height: 74px;
+  border-radius: 50%;
+}
+
+/* Pensando */
+.robot-screen.thinking .eyes {
+  top: 122px;
+  gap: 220px;
+  animation: lookAround 2.2s infinite alternate ease-in-out;
+}
+
+.robot-screen.thinking .eye {
+  width: 72px;
+  height: 72px;
+}
+
+.robot-screen.thinking .mouth-area {
+  top: 330px;
+}
+
+@keyframes lookAround {
+  from { transform: translateX(calc(-50% - 16px)); }
+  to { transform: translateX(calc(-50% + 16px)); }
+}
+
+.thinking-dots {
+  position: absolute;
+  top: 70px;
+  left: 565px;
+  display: flex;
+  gap: 14px;
+  z-index: 3;
+}
+
+.thinking-dots span {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--face-cyan);
+  box-shadow:
+    0 0 10px var(--face-cyan),
+    0 0 24px var(--face-cyan-glow);
+  animation: dotPulse 1.1s infinite ease-in-out;
+}
+
+.thinking-dots span:nth-child(2) { animation-delay: 0.16s; }
+.thinking-dots span:nth-child(3) { animation-delay: 0.32s; }
+
+@keyframes dotPulse {
+  0%, 100% { transform: translateY(0); opacity: 0.45; }
+  50% { transform: translateY(-10px); opacity: 1; }
+}
+
+/* Hablando */
+.robot-screen.speaking .mouth-area {
+  top: 324px;
+}
+
+.mouth-speaking {
+  width: 92px;
+  height: 24px;
+  border-radius: 999px;
+  animation: talk 0.2s infinite alternate ease-in-out;
+}
+
+@keyframes talk {
+  0% { width: 102px; height: 18px; border-radius: 999px; }
+  50% { width: 72px; height: 58px; border-radius: 50%; }
+  100% { width: 118px; height: 34px; border-radius: 999px; }
+}
+
+/* Escuchando */
+.robot-screen.listening .eye {
+  width: 118px;
+  height: 118px;
+  animation: listeningPulse 1.15s infinite ease-in-out;
+}
+
+.robot-screen.listening .eye-shine {
+  opacity: 0.65;
+}
+
+.robot-screen.listening .mouth-area {
+  top: 336px;
+}
+
+@keyframes listeningPulse {
+  0%, 100% {
+    box-shadow:
+      0 0 25px var(--face-cyan),
+      0 0 58px var(--face-cyan-glow),
+      0 0 110px rgba(18, 231, 255, 0.42);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow:
+      0 0 32px var(--face-cyan),
+      0 0 82px var(--face-cyan-glow),
+      0 0 145px rgba(18, 231, 255, 0.55);
+    transform: scale(1.05);
+  }
+}
+
+/* Durmiendo */
+.robot-screen.sleeping .eyes {
+  top: 136px;
+  gap: 245px;
+}
+
+.robot-screen.sleeping .eye {
+  width: 112px;
+  height: 16px;
+  border-radius: 999px;
+  animation: sleepBreath 2.4s infinite ease-in-out;
+  background: var(--face-yellow);
+  box-shadow:
+    0 0 16px var(--face-yellow),
+    0 0 44px var(--face-yellow-glow);
+}
+
+.robot-screen.sleeping .eye-shine {
+  display: none;
+}
+
+.robot-screen.sleeping .mouth-area {
+  top: 332px;
+}
+
+.mouth-sleep {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--face-yellow);
+  box-shadow:
+    0 0 18px var(--face-yellow),
+    0 0 38px var(--face-yellow-glow);
+}
+
+.sleeping-z {
+  position: absolute;
+  top: 24px;
+  left: 612px;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  color: var(--face-yellow);
+  font-weight: 900;
+  text-shadow:
+    0 0 12px var(--face-yellow),
+    0 0 28px var(--face-yellow-glow);
+  z-index: 3;
+  animation: sleepZ 1.8s infinite ease-in-out;
+}
+
+.sleeping-z span:nth-child(1) { font-size: 28px; opacity: 0.7; }
+.sleeping-z span:nth-child(2) { font-size: 38px; opacity: 0.85; }
+.sleeping-z span:nth-child(3) { font-size: 50px; opacity: 1; }
+
+@keyframes sleepBreath {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(7px); }
+}
+
+@keyframes sleepZ {
+  0%, 100% { transform: translateY(0); opacity: 0.75; }
+  50% { transform: translateY(-10px); opacity: 1; }
+}
+
+/* Confundido */
+.robot-screen.confused .eyes {
+  top: 122px;
+  gap: 245px;
+}
+
+.robot-screen.confused .eye {
+  width: 112px;
+  height: 42px;
+  border-radius: 0 0 70px 70px;
+  animation: none;
+  transform: scaleY(0.85);
+  background: var(--face-purple);
+  box-shadow:
+    0 0 22px var(--face-purple),
+    0 0 54px var(--face-purple-glow),
+    0 0 98px rgba(169, 131, 255, 0.38);
+}
+
+.robot-screen.confused .eye-shine {
+  display: none;
+}
+
+.robot-screen.confused .mouth-area {
+  top: 356px;
+}
+
+.confused-marks {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  z-index: 3;
+}
+
+.confused-marks .dot,
+.confused-marks .question {
+  color: var(--face-purple);
+  text-shadow:
+    0 0 12px var(--face-purple),
+    0 0 28px var(--face-purple-glow);
+}
+
+.confused-marks .dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--face-purple);
+  box-shadow:
+    0 0 10px var(--face-purple),
+    0 0 24px var(--face-purple-glow);
+  display: inline-block;
+  animation: dotPulse 1.1s infinite ease-in-out;
+}
+
+.confused-marks .dot:nth-child(2) { animation-delay: 0.16s; }
+.confused-marks .dot:nth-child(3) { animation-delay: 0.32s; }
+
+.confused-marks .question {
+  font-size: 68px;
+  font-weight: 900;
+  line-height: 1;
+  margin-left: 8px;
+}
+
+/* Enojado */
+.robot-screen.angry .eyes {
+  top: 116px;
+  gap: 230px;
+}
+
+.robot-screen.angry .eye {
+  width: 112px;
+  height: 64px;
+  border-radius: 55% 55% 45% 45%;
+  animation: none;
+}
+
+.robot-screen.angry .left-eye {
+  transform: rotate(18deg) skewX(-12deg);
+}
+
+.robot-screen.angry .right-eye {
+  transform: rotate(-18deg) skewX(12deg);
+}
+
+.robot-screen.angry .mouth-area {
+  top: 318px;
+}
+
+/* Serio / molesto */
+.robot-screen.annoyed .eyes {
+  top: 128px;
+  gap: 235px;
+}
+
+.robot-screen.annoyed .eye {
+  width: 112px;
+  height: 42px;
+  border-radius: 0 0 70px 70px;
+  animation: none;
+  transform: scaleY(0.85);
+}
+
+.robot-screen.annoyed .mouth-area {
+  top: 338px;
+}
+
+.mouth-annoyed {
+  width: 108px;
+  height: 15px;
+}
+
+@media (max-width: 700px) {
+  .robot-face {
+    transform: scale(0.74);
+  }
+}
+
+/* =============================
+   Ajustes finales solicitados
+   ============================= */
+
+/* Fondo completamente oscuro, sin círculo blanco o halo grande */
+.robot-screen {
+  background: #020711 !important;
+}
+
+.robot-face {
+  background: transparent !important;
+  filter: none !important;
+  box-shadow: none !important;
+}
+
+/* Ojos un poco más arriba y ligeramente más grandes en el estado base */
+.eyes {
+  top: 96px;
+  gap: 250px;
+}
+
+.eye {
+  width: 116px;
+  height: 116px;
+}
+
+/* Boca más abajo y un poco más grande */
+.mouth-area {
+  top: 348px;
+  width: 240px;
+  height: 130px;
+}
+
+.mouth-neutral,
+.mouth-annoyed,
+.mouth-confused-line,
+.mouth-sleep {
+  width: 118px;
+  height: 18px;
+  border-radius: 999px;
+}
+
+/* Pensando: los tres puntos van centrados arriba de los ojos, separados de ellos */
+.thinking-dots {
+  top: 34px;
+  left: 50%;
+  transform: translateX(-50%);
+  gap: 18px;
+}
+
+.robot-screen.thinking .eyes {
+  top: 112px;
+  gap: 230px;
+}
+
+.robot-screen.thinking .eye {
+  width: 82px;
+  height: 82px;
+}
+
+.robot-screen.thinking .mouth-area {
+  top: 352px;
+}
+
+/* Confundido: misma boca sobria que la cara seria */
+.mouth-confused-line {
+  background: var(--face-purple);
+  box-shadow:
+    0 0 16px var(--face-purple),
+    0 0 40px var(--face-purple-glow);
+}
+
+/* Durmiendo: boca seria/recta; las Z se mantienen */
+.mouth-sleep {
+  background: var(--face-yellow);
+  box-shadow:
+    0 0 16px var(--face-yellow),
+    0 0 38px var(--face-yellow-glow);
+}
+
+.robot-screen.sleeping .mouth-area {
+  top: 354px;
+}
+
+/* Emocionado: ojos tipo anime >< */
+.robot-screen.excited .eyes {
+  top: 106px;
+  gap: 240px;
+}
+
+.robot-screen.excited .eye {
+  position: relative;
+  width: 112px;
+  height: 96px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  animation: excitedBounce 0.75s infinite alternate ease-in-out;
+}
+
+.robot-screen.excited .eye::before,
+.robot-screen.excited .eye::after {
+  content: "";
+  position: absolute;
+  width: 88px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--face-cyan);
+  box-shadow:
+    0 0 16px var(--face-cyan),
+    0 0 42px var(--face-cyan-glow);
+}
+
+/* Ojo izquierdo como > */
+.robot-screen.excited .left-eye::before {
+  top: 24px;
+  left: 12px;
+  transform: rotate(35deg);
+}
+
+.robot-screen.excited .left-eye::after {
+  bottom: 24px;
+  left: 12px;
+  transform: rotate(-35deg);
+}
+
+/* Ojo derecho como < */
+.robot-screen.excited .right-eye::before {
+  top: 24px;
+  right: 12px;
+  transform: rotate(-35deg);
+}
+
+.robot-screen.excited .right-eye::after {
+  bottom: 24px;
+  right: 12px;
+  transform: rotate(35deg);
+}
+
+.robot-screen.excited .eye-shine {
+  display: none;
+}
+
+.robot-screen.excited .mouth-area {
+  top: 320px;
+}
+
+.robot-screen.excited .mouth-svg path {
+  stroke-width: 18;
+}
+
+/* Enojado: ojos más parecidos al dibujo, inclinados hacia el centro */
+.robot-screen.angry .eyes {
+  top: 114px;
+  gap: 240px;
+}
+
+.robot-screen.angry .eye {
+  width: 118px;
+  height: 70px;
+  border-radius: 20px 80px 20px 80px;
+  animation: none;
+  box-shadow:
+    0 0 18px var(--face-cyan),
+    0 0 48px var(--face-cyan-glow),
+    0 0 95px rgba(18, 231, 255, 0.35);
+}
+
+.robot-screen.angry .left-eye {
+  clip-path: polygon(4% 10%, 100% 42%, 84% 92%, 12% 66%);
+  transform: rotate(13deg);
+}
+
+.robot-screen.angry .right-eye {
+  clip-path: polygon(0 42%, 96% 10%, 88% 66%, 16% 92%);
+  transform: rotate(-13deg);
+}
+
+.robot-screen.angry .eye-shine {
+  display: none;
+}
+
+.robot-screen.angry .mouth-area {
+  top: 338px;
+}
+
+/* Serio/molesto se conserva más plano y calmado */
+.robot-screen.annoyed .eyes {
+  top: 122px;
+  gap: 245px;
+}
+
+.robot-screen.annoyed .mouth-area {
+  top: 356px;
+}
